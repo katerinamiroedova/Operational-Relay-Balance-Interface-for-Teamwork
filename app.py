@@ -1562,33 +1562,111 @@ elif st.session_state.page == "Decision Log":
 
     st.title("Decision Log")
 
-    st.markdown(
-        '<div class="muted">Every important operational decision remains traceable.</div>',
-        unsafe_allow_html=True,
+    st.caption(
+        "Every important operational decision remains traceable."
     )
 
     st.write("")
 
-    for item in st.session_state.logs:
+    # HEADER
+    h1, h2, h3 = st.columns([0.8, 2.8, 1.2])
 
-        st.markdown(
-            f"""
-            <div class="log">
-                <span class="log-time">{item["time"]}</span>
-                <span class="log-type">{item["type"]}</span>
+    with h1:
+        st.caption("TIME")
 
-                <div class="log-message">
-                    {item["message"]}
-                </div>
+    with h2:
+        st.caption("OPERATIONAL DECISION")
 
-                <div class="log-source">
-                    SOURCE · {item["source"]}
-                    &nbsp;&nbsp;|&nbsp;&nbsp;
-                    CATEGORY · {item["category"]}
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+    with h3:
+        st.caption("SOURCE")
+
+    st.divider()
+
+    # LOG ENTRIES
+    if not st.session_state.logs:
+
+        st.info("No operational decisions recorded yet.")
+
+    else:
+
+        for index, item in enumerate(st.session_state.logs):
+
+            col_time, col_main, col_source = st.columns(
+                [0.8, 2.8, 1.2]
+            )
+
+            with col_time:
+
+                st.markdown(
+                    f"**{item['time']}**"
+                )
+
+                st.caption(item["type"])
+
+            with col_main:
+
+                st.write(
+                    f"**{item['message']}**"
+                )
+
+                st.caption(
+                    f"Category · {item['category']}"
+                )
+
+            with col_source:
+
+                source = item["source"]
+
+                if source == "COMMAND":
+                    st.success("COMMAND")
+
+                elif source == "ORBIT":
+                    st.info("ORBIT")
+
+                elif source == "ENGINEERING":
+                    st.warning("ENGINEERING")
+
+                else:
+                    st.caption(source)
+
+            if index < len(st.session_state.logs) - 1:
+                st.divider()
+
+    st.write("")
+
+    # LOG STATISTICS
+    st.subheader("Log Status")
+
+    s1, s2, s3 = st.columns(3)
+
+    with s1:
+        st.metric(
+            "TOTAL EVENTS",
+            len(st.session_state.logs)
+        )
+
+    with s2:
+        command_events = sum(
+            1
+            for item in st.session_state.logs
+            if item["type"] == "COMMAND"
+        )
+
+        st.metric(
+            "COMMAND ACTIONS",
+            command_events
+        )
+
+    with s3:
+        system_events = sum(
+            1
+            for item in st.session_state.logs
+            if item["type"] in ["SYSTEM", "PROTOCOL"]
+        )
+
+        st.metric(
+            "SYSTEM EVENTS",
+            system_events
         )
 
     st.write("")
@@ -1600,9 +1678,12 @@ elif st.session_state.page == "Decision Log":
 
         st.session_state.logs = []
 
-        st.success("Session log cleared.")
+        st.success(
+            "Session decision log cleared."
+        )
 
-
+        st.rerun()
+        
 # ============================================================
 # EMERGENCY MODE
 # ============================================================
